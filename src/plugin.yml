@@ -1,0 +1,6 @@
+name: EnderpearlPatch
+version: 1.0.0
+main: ezzerland.ravenloftmc.EnderpearlPatch
+load: POSTWORLD
+description: "Fixes enderpearls teleporting through shit"
+author: Ezzerland
