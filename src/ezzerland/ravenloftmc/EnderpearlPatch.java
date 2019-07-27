@@ -27,37 +27,40 @@ public class EnderpearlPatch extends JavaPlugin implements Listener
       event.getTo().setY(Math.floor(event.getTo().getY())+0.5f);
       event.getTo().setZ(Math.floor(event.getTo().getZ())+0.5f);
       BlockCheck landing = new BlockCheck(event.getTo().getBlock());
-      boolean cancelTeleport = false;
-      if (landing.isSafe) { event.getTo().setY(Math.floor(event.getTo().getY())+landing.adjustY); }
-      else {
-        cancelTeleport=true;
-        double xMin = Math.min(event.getFrom().getX(), event.getTo().getX());
-        double xMax = Math.max(event.getFrom().getX(), event.getTo().getX());
-        double yMin = Math.min(event.getFrom().getY(), event.getTo().getY());
-        double yMax = Math.max(event.getFrom().getY(), event.getTo().getY());
-        double zMin = Math.min(event.getFrom().getZ(), event.getTo().getZ());
-        double zMax = Math.max(event.getFrom().getZ(), event.getTo().getZ());
-        List<Location> locations = new ArrayList<Location>();
-        for (double x=xMin; x<xMax; x++)
-        { for (double y=yMin; y<yMax; y++)
-          { for (double z=zMin; z<zMax; z++)
-            {
-              locations.add(new Location(event.getTo().getWorld(), Math.floor(x)+0.5f, Math.floor(y)+0.5f, Math.floor(z)+0.5f));
+      boolean cancelTeleport = true;
+      if ((event.getFrom().getWorld() == event.getTo().getWorld()) &&  (event.getFrom().distanceSquared(event.getTo()) < 32768)) {
+        cancelTeleport = false;
+        if (landing.isSafe) { event.getTo().setY(Math.floor(event.getTo().getY())+landing.adjustY); }
+        else {
+          cancelTeleport=true;
+          double xMin = Math.min(event.getFrom().getX(), event.getTo().getX());
+          double xMax = Math.max(event.getFrom().getX(), event.getTo().getX());
+          double yMin = Math.min(event.getFrom().getY(), event.getTo().getY());
+          double yMax = Math.max(event.getFrom().getY(), event.getTo().getY());
+          double zMin = Math.min(event.getFrom().getZ(), event.getTo().getZ());
+          double zMax = Math.max(event.getFrom().getZ(), event.getTo().getZ());
+          List<Location> locations = new ArrayList<Location>();
+          for (double x=xMin; x<xMax; x++)
+          { for (double y=yMin; y<yMax; y++)
+            { for (double z=zMin; z<zMax; z++)
+              {
+                locations.add(new Location(event.getTo().getWorld(), Math.floor(x)+0.5f, Math.floor(y)+0.5f, Math.floor(z)+0.5f));
+              }
             }
           }
-        }
-        locations.sort(Comparator.comparing(location -> event.getTo().distanceSquared(location)));
-        for (Location location : locations)
-        {
-          BlockCheck blockCheck = new BlockCheck(location.getBlock());
-          if (blockCheck.isSafe)
+          locations.sort(Comparator.comparing(location -> event.getTo().distanceSquared(location)));
+          for (Location location : locations)
           {
-            location.setYaw(event.getTo().getYaw());
-            location.setPitch(event.getTo().getPitch());
-            location.setY(Math.floor(location.getY())+blockCheck.adjustY);
-            event.setTo(location);
-            cancelTeleport = false;
-            break;
+            BlockCheck blockCheck = new BlockCheck(location.getBlock());
+            if (blockCheck.isSafe)
+            {
+              location.setYaw(event.getTo().getYaw());
+              location.setPitch(event.getTo().getPitch());
+              location.setY(Math.floor(location.getY())+blockCheck.adjustY);
+              event.setTo(location);
+              cancelTeleport = false;
+              break;
+            }
           }
         }
       }
